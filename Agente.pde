@@ -1,5 +1,6 @@
 class Agente extends Particula {
   float radioVision = radio + 50;
+  boolean libre = true;
   
   Agente(float x_, float y_, int i) {
     super(x_, y_, i);
@@ -22,12 +23,9 @@ class Agente extends Particula {
     }
     return false;
   }
+  
   boolean detectable(Agente otro){
     return (distancia(otro) < radioVision + otro.radio);
-  }
-  
-  boolean buscarPosicion(Agente otro){
-    return (distancia(otro) < radio + otro.radio);
   }
   
   void setRadioVision(float r){

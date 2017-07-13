@@ -2,7 +2,7 @@ class Particula{
   PVector pos = new PVector(0,0);
   PVector vel = new PVector(0,0);
   PVector acc = new PVector(0,0);
-  float radio = 15;
+  float radio = 20;
   int id;
   int zona = 0;
   float masa = 1;
@@ -19,18 +19,20 @@ class Particula{
 //_____________________________________________________________________________________________________________  
   void dibujar(){
     if( visibleX() && visibleY()){
-      stroke(0);
-      noFill();
+      stroke(15);
+      //noFill();
+      fill(colorParticula, 100);
       //fill(colorParticula);
       pushMatrix();
         translate(pos.x, pos.y);
         rotate(vel.heading());
         ellipse(0, 0, radio*2, radio*2);
+        //ellipse(0, 0, (radio+50)*2, (radio+50)*2);
         line(0,0,radio,0);
         textAlign(CENTER);
         stroke(0); 
         fill(0);
-        text(str(id)+":: "+str(this.zona),0, -5);
+        //text(str(id)+":: "+str(this.zona),0, -5);
       popMatrix();
     }
   }
