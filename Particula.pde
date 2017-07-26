@@ -2,16 +2,19 @@ class Particula{
   PVector pos = new PVector(0,0);
   PVector vel = new PVector(0,0);
   PVector acc = new PVector(0,0);
-  float radio = 20;
-  int id;
-  int zona = 0;
+  float velMax;
+  int radio = 13;
+  float radioVision = radio + 70;
   float masa = 1;
-  color colorParticula = color(255);
+  
+  // para ver vision
+  boolean vision = false;
+  PVector line1 = new PVector(cos(PI/4), sin(PI/4));
+  PVector line2 = new PVector(cos(-PI/4), sin(-PI/4));
+  
   // Constructor
-  Particula(float x_, float y_, int i){
+  Particula(float x_, float y_){
     pos = new PVector(x_, y_);
-    id = i;
-    //println(pos.x+":"+pos.y+"  "+this.zona);
   }
   
 //_____________________________________________________________________________________________________________  
@@ -20,18 +23,22 @@ class Particula{
   void dibujar(){
     if( visibleX() && visibleY()){
       stroke(15);
-      //noFill();
-      fill(colorParticula, 100);
-      //fill(colorParticula);
+      noFill();
       pushMatrix();
         translate(pos.x, pos.y);
         rotate(vel.heading());
-        ellipse(0, 0, radio*2, radio*2);
-        //ellipse(0, 0, (radio+50)*2, (radio+50)*2);
-        line(0,0,radio,0);
-        textAlign(CENTER);
-        stroke(0); 
-        fill(0);
+        //ellipseMode(RADIUS);
+        ellipse(0, 0, radio, radio);
+        if(vision){
+          line(0, 0, line1.x*(this.radioVision), line1.y*(this.radioVision));
+          line(0,0, line2.x*(this.radioVision), line2.y*(this.radioVision));
+          arc(0, 0, this.radioVision, this.radioVision, -PI/4,PI/4);
+        }
+        //line(0,0,radio,0);
+        //line(0,0,-cos(PI/4)*(radio+50),0);
+        //textAlign(CENTER);
+        //stroke(0); 
+        //fill(0);
         //text(str(id)+":: "+str(this.zona),0, -5);
       popMatrix();
     }
@@ -39,8 +46,9 @@ class Particula{
 //_____________________________________________________________________________________________________________
   void mover(){
     vel.add(acc);
-    acc.mult(0);
+    vel.limit(this.velMax);
     pos.add(vel);
+    acc.mult(0);
   }
   
   void aplicarFuerza(PVector f){
@@ -56,13 +64,14 @@ class Particula{
     dir.mult(impulso);
     aplicarFuerza(dir);
   }
+  
   void rotar(float a){
     vel.rotate(a);
   }
 //_____________________________________________________________________________________________________________
   // detectar la colision con otra particula
-  boolean colision(Particula p){
-    if(distancia(p) < (radio + p.radio)) return true;
+  boolean colision(int r, PVector p){
+    if(distancia(p) < (radio + r)) return true;
     return false;
   }
   // detectar la colision con un punto del espacio
@@ -71,11 +80,7 @@ class Particula{
     return false;
   }
 //_____________________________________________________________________________________________________________
-  // Calcular la distancia a otra particula
-  float distancia(Particula p){
-    return dist(pos.x, pos.y, p.pos.x, p.pos.y);
-  }
-  // CAlcular la distancia a un punto del espacio.
+  // Calcular la distancia a un punto del espacio.
   float distancia(PVector p){
     return dist(pos.x, pos.y, p.x, p.y);
   }
@@ -93,13 +98,20 @@ class Particula{
   boolean visibleY(){
     return ((pos.y + radio) >= 0) && ((pos.y - radio) <= height);
   }
-//_____________________________________________________________________________________________________________  
-
-  void setMasa(float m){
-    masa = m;
+  
+  void bordes(){
+    if(pos.x <= -radio){
+      pos.x = width;
+    }
+    else if(pos.x >= width + radio){
+      pos.x = 0;
+    }
+    if(pos.y < -radio){
+      pos.y = height;
+    }
+    else if(pos.y > height + radio){
+      pos.y = 0;
+    }
   }
   
-  void setRadio(float r){
-    radio = r;
-  }
 }

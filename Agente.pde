@@ -1,34 +1,116 @@
 class Agente extends Particula {
-  float radioVision = radio + 50;
-  boolean libre = true;
   
-  Agente(float x_, float y_, int i) {
-    super(x_, y_, i);
-    
+  PVector cuadricula;
+  float maxF = 0.1;
+  
+  Agente(float x_, float y_) {
+    super(x_, y_);
   }
+  
   // Metodos del agente
-  boolean obstaculo(Agente otro){
-    if(detectable(otro)){
-      PVector dir = vel.copy();            // la copia de la velocidad contiene la direccion del agente
-      dir.normalize();
-      //ellipse(dir.x*radioVision+pos.x, dir.y*radioVision+pos.y, 5, 5);
-      float d = distancia(otro);           // 
-      dir.mult(d);                         // calcular el punto que hace contacto con el obstaculo
-      dir.add(pos);                        // trasladar el vector de vision a la posicion del agente
-      if(otro.colision(dir)){
-        stroke(255,0,0);
-        line(pos.x, pos.y, otro.pos.x, otro.pos.y);
-        return true;
-      }
+  boolean cercano(PVector p, int r){
+    return (distancia(p) < radioVision + r);
+  }
+  
+  void albedrio(ArrayList<Agente> agentes, ArrayList<Obstaculo> m){
+    PVector separacion = separar(agentes);
+    PVector alineacion = alineacion(agentes);
+    //PVector cohesion = cohesion(agentes);
+    PVector carretera = separarCamino(m);
+    //PVector objetivo = buscar(new PVector(mouseX, mouseY));
+    
+    separacion.mult(1.5);
+    alineacion.mult(1);
+    //cohesion.mult(1);
+    carretera.mult(1);
+    //objetivo.mult(1);
+    
+    //aplicarFuerza(objetivo);
+    aplicarFuerza(separacion);
+    aplicarFuerza(alineacion);
+    //aplicarFuerza(cohesion);
+    aplicarFuerza(carretera);
+  }
+  
+  PVector alineacion(ArrayList<Agente> agentes){
+    PVector velocidades = new PVector(0, 0);
+    int cont = 0;
+    for(Agente m: agentes){
+      velocidades.add(m.vel);
+      cont++;
     }
-    return false;
+    if(cont > 0){
+      velocidades.div(cont);
+      velocidades.normalize();
+      velocidades.mult(this.velMax);
+      velocidades.sub(this.vel);
+      velocidades.limit(this.maxF);
+    }
+    return velocidades;
   }
   
-  boolean detectable(Agente otro){
-    return (distancia(otro) < radioVision + otro.radio);
+  PVector separar(ArrayList<Agente> agentes){
+    PVector suma = new PVector(0, 0);
+    int contador = 0;
+    for(Agente m: agentes){
+      float dist = distancia(m.pos);
+      PVector contra = PVector.sub(this.pos ,m.pos);
+      contra.normalize();
+      contra.div(dist);
+      suma.add(contra);
+      contador++;
+    }
+    if(contador > 0){
+      suma.div(contador);
+      suma.normalize();
+      suma.mult(this.velMax);
+      suma.sub(this.vel);
+      suma.limit(this.maxF);
+    }
+    return suma;
   }
   
-  void setRadioVision(float r){
-    radioVision = radio + r;
+  PVector cohesion(ArrayList<Agente> agentes){
+    PVector suma = new PVector(0, 0);
+    int contador = 0;
+    for(Agente m: agentes){
+      suma.add(m.pos);
+      contador++;
+    }
+    if(contador > 0){
+      suma.div(contador);
+      return buscar(suma);
+    }
+    return suma;
+  }
+  
+  PVector separarCamino(ArrayList<Obstaculo> carretera){
+    PVector suma = new PVector(0, 0);
+    int contador = 0;
+    for(Obstaculo m: carretera){
+      PVector contra = PVector.sub(this.pos ,m.pos);
+      contra.normalize();
+      float dist = PVector.dist(this.pos, m.pos);
+      contra.div(dist);
+      suma.add(contra);
+      contador++;
+    }
+    if(contador > 0){
+      suma.div(contador);
+      suma.normalize();
+      suma.mult(this.velMax);
+      suma.sub(this.vel);
+      suma.limit(this.maxF);
+    }
+    return suma;
+  }
+  
+  PVector buscar(PVector objetivo){
+    PVector deseo = PVector.sub(objetivo, pos);
+    deseo.normalize();
+    deseo.mult(velMax);
+    deseo.sub(this.vel);
+    deseo.limit(this.maxF);
+    return deseo;
   }
 }
